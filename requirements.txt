@@ -1,0 +1,7 @@
+torch
+safetensors
+huggingface-hub
+rasterio
+Pillow
+opencv-python
+numpy

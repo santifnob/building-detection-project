@@ -1,0 +1,14 @@
+Dos caminos pensados: 
+- Descargar directamente el geoTiff manualmente (sin pasar por el KMZ)mediante aplicaciones como QGIS, haciendo que el mismo sea un requerimiento
+Ventajas: - simplicidad en su implementación ya que no se necesita automatización
+          - Mayor calidad?
+
+- Obtener el KMZ (que probablemente no contenga el .tif) y recuperar la imagén satelitales desde APIs de proveedores (Como google earth)
+Desventajas: - Limitaciones en calidad de la imagén
+            - Muchas son pagas
+
+- Buscar alguna aplicación que el KMZ tengo la imagén geoTiff adentro directamente? 
+
+
+Importante la consideración de que luego se deben aplicar el filtrado de fechas
+
