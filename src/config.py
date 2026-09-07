@@ -24,8 +24,10 @@ MASK_THRESHOLD = 0.5
 ## DISTANCE_RATIO — altura mínima de los picos en la transformada de distancia, como fracción del pico más alto de toda la imagen
 ## ,para considerarse el "centro" de un edificio nuevo.
 ## DISTANCE_KERNEL_SIZE -- tamaño del vecindario que se usa para decidir si un píxel es máximo local (candidato a núcleo).
+## MAX_AREA — píxeles máximos que debe tener una mancha para contarse como edificio real (no ruido).
 
-MIN_AREA = 50
+MIN_AREA = 350
+MAX_AREA = 4500
 MORPH_KERNEL_SIZE = 7
-DISTANCE_RATIO = 0.25
+DISTANCE_RATIO = 0.1
 DISTANCE_KERNEL_SIZE = 1

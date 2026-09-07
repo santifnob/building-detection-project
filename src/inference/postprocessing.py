@@ -6,6 +6,7 @@ def count_and_draw_buildings(
     binary_mask: np.ndarray,
     image: np.ndarray,
     min_area: int = 100,
+    max_area: int = 1000000,
     morph_kernel_size: int = 3,
     distance_ratio: float = 0.35,
     distance_kernel_size: int = 3,
@@ -52,7 +53,7 @@ def count_and_draw_buildings(
     for label in range(2, int(watershed_markers.max()) + 1):
         component = watershed_markers == label
         area = int(component.sum())
-        if area < min_area:
+        if area < min_area or area > max_area:
             continue
         count += 1
         instance_mask[component] = count
@@ -60,6 +61,9 @@ def count_and_draw_buildings(
         x_min, x_max = int(x_coords.min()), int(x_coords.max())
         y_min, y_max = int(y_coords.min()), int(y_coords.max())
         cv2.rectangle(annotated, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+
+        print(f"Edificio {count}: Área = {area} píxeles, Bounding Box = ({x_min}, {y_min}), ({x_max}, {y_max})")
+
         cv2.putText(annotated, str(count), (x_min, max(15, y_min - 4)),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 

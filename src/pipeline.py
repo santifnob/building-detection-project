@@ -43,7 +43,8 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
         return
 
     building_count, annotated, instance_mask = count_and_draw_buildings(
-        binary_mask, input_uint8, min_area = config.MIN_AREA, morph_kernel_size = config.MORPH_KERNEL_SIZE,
+        binary_mask, input_uint8, min_area = config.MIN_AREA, max_area = config.MAX_AREA,
+        morph_kernel_size = config.MORPH_KERNEL_SIZE,
         distance_ratio=config.DISTANCE_RATIO, distance_kernel_size=config.DISTANCE_KERNEL_SIZE,
     )
     save_image(input_uint8, OUTPUT_DIR / "input.png")
