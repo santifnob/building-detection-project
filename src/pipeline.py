@@ -1,4 +1,5 @@
 from os import path
+from pathlib import Path
 
 from anyio import sleep
 import cv2
@@ -19,7 +20,12 @@ import src.config as config
 import rasterio
 
 def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TILE_OVERLAP):
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    result_dir = OUTPUT_DIR / Path(path).stem
+    pre_dir = result_dir / "pre"
+    post_dir = result_dir / "post"
+    pre_dir.mkdir(parents=True, exist_ok=True)
+    post_dir.mkdir(parents=True, exist_ok=True)
+
     model = load_model()
     image_f32 = ensure_rgb(read_image_file(path))
     h, w = image_f32.shape[:2]
@@ -41,11 +47,11 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
     heatmap_rgb = cv2.cvtColor(heatmap_bgr, cv2.COLOR_BGR2RGB)
 
     if not COUNT_AND_DRAW_BUILDINGS:
-        save_image(input_uint8, OUTPUT_DIR / "input.png")
-        save_image(heatmap_rgb, OUTPUT_DIR / "heatmap.png")
-        save_image(binary_mask, OUTPUT_DIR / "mask.png")
+        save_image(input_uint8, pre_dir / "input.png")
+        save_image(heatmap_rgb, pre_dir / "heatmap.png")
+        save_image(binary_mask, pre_dir / "mask.png")
         print("Listo. Se generaron la máscara binaria y el heatmap.")
-        print(f"Resultados guardados en: {OUTPUT_DIR}")
+        print(f"Resultados guardados en: {result_dir}")
         return
     
     building_count, annotated, instance_mask = count_and_draw_buildings(
@@ -58,10 +64,10 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
         pixel_size_m= pixel_size_m_retrieved or config.PIXEL_SIZE_M_FALLBACK, 
         min_area_m2=config.MIN_AREA_M2, max_area_m2=config.MAX_AREA_M2
     )
-    save_image(input_uint8, OUTPUT_DIR / "input.png")
-    save_image(heatmap_rgb, OUTPUT_DIR / "heatmap.png")
-    save_image(binary_mask, OUTPUT_DIR / "mask.png")
-    save_image(annotated, OUTPUT_DIR / "buildings.png")
-    save_image((instance_mask > 0).astype(np.uint8) * 255, OUTPUT_DIR / "instances.png")
+    save_image(input_uint8, pre_dir / "input.png")
+    save_image(heatmap_rgb, pre_dir / "heatmap.png")
+    save_image(binary_mask, pre_dir / "mask.png")
+    save_image(annotated, post_dir / "buildings.png")
+    save_image((instance_mask > 0).astype(np.uint8) * 255, post_dir / "instances.png")
     print(f"Listo. Se detectaron {building_count} edificios.")
-    print(f"Resultados guardados en: {OUTPUT_DIR}")
+    print(f"Resultados guardados en: {result_dir}")

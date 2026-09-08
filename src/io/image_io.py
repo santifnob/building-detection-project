@@ -33,6 +33,11 @@ def save_image(image: np.ndarray, path: Path) -> None:
     try:
         with temporary_path.open("wb") as output:
             Image.fromarray(image).save(output, format="PNG")
-        os.replace(temporary_path, path)
+        try:
+            os.replace(temporary_path, path)
+        except PermissionError:
+            # Algunos directorios de Windows bloquean el reemplazo atómico,
+            # aunque permiten sobrescribir directamente el archivo PNG.
+            Image.fromarray(image).save(path, format="PNG")
     finally:
         temporary_path.unlink(missing_ok=True)

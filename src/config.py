@@ -31,15 +31,15 @@ DISTANCE_KERNEL_SIZE = 1
 TOLERANCE_GREEN_PERCENTAGE = 55.0  ## Luego de varias pruebas, se determinó que si más del 50% de los píxeles de un edificio detectado son verdes, es probable que sea un falso positivo (un árbol o vegetación) y no un edificio real.
 
 ### Opciones para realizar el filtrado de área de los edificios detectados (puede llegar a resolver problemas de incompatibilidad entre cm/pixel y min/max pixel por construcción).
-AREA_MODE = "statistical"  # "manual", "physical" o "statistical" para forzar una estrategia.
+AREA_MODE = "physical"  # "manual", "physical" o "statistical" para forzar una estrategia.
 
 ### Parámetros de Área Real (solo se usan si AREA_MODE = "physical")
 PIXEL_SIZE_M_FALLBACK = 0.5  # metros/píxel en caso de que no se pueda extraer del GeoTIFF
 # En general parece trar bien el pixel/m desde el GeoTIFF
-MIN_AREA_M2 = 15.0  # metros², área mínima de un edificio
+MIN_AREA_M2 = 30.0  # metros², área mínima de un edificio
 MAX_AREA_M2 = 500.0  # metros², área máxima de un edificio
 
 ### Parámetros de Área Manual (solo se usan si AREA_MODE = "manual")
-MANUAL_MIN_AREA = 350
-MANUAL_MAX_AREA = 4500
+MANUAL_MIN_AREA = 2000
+MANUAL_MAX_AREA = 12000
 
