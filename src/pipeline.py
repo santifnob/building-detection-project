@@ -1,3 +1,6 @@
+from os import path
+
+from anyio import sleep
 import cv2
 import numpy as np
 
@@ -13,7 +16,7 @@ from src.inference.engine import load_model, predict_large_image, predict_tile
 from src.inference.postprocessing import count_and_draw_buildings
 from src.io.image_io import ensure_rgb, read_image_file, save_image
 import src.config as config
-
+import rasterio
 
 def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TILE_OVERLAP):
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -21,6 +24,9 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
     image_f32 = ensure_rgb(read_image_file(path))
     h, w = image_f32.shape[:2]
     print(f"Imagen cargada: {w}x{h} píxeles")
+
+    with rasterio.open(path) as src:
+            pixel_size_m_retrieved = abs(src.transform.a)  # CRS
 
     if max(h, w) > LARGE_IMAGE_THRESHOLD:
         print(f"Imagen grande detectada, procesando por tiles de {tile_size}x{tile_size} "
@@ -41,11 +47,16 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
         print("Listo. Se generaron la máscara binaria y el heatmap.")
         print(f"Resultados guardados en: {OUTPUT_DIR}")
         return
-
+    
     building_count, annotated, instance_mask = count_and_draw_buildings(
-        binary_mask, input_uint8, min_area = config.MIN_AREA, max_area = config.MAX_AREA,
+        binary_mask, input_uint8,
         morph_kernel_size = config.MORPH_KERNEL_SIZE,
         distance_ratio=config.DISTANCE_RATIO, distance_kernel_size=config.DISTANCE_KERNEL_SIZE,
+        green_tolerance_percentage=config.TOLERANCE_GREEN_PERCENTAGE,
+        area_mode=config.AREA_MODE,
+        manual_min_area=config.MANUAL_MIN_AREA, manual_max_area=config.MANUAL_MAX_AREA,
+        pixel_size_m= pixel_size_m_retrieved or config.PIXEL_SIZE_M_FALLBACK, 
+        min_area_m2=config.MIN_AREA_M2, max_area_m2=config.MAX_AREA_M2
     )
     save_image(input_uint8, OUTPUT_DIR / "input.png")
     save_image(heatmap_rgb, OUTPUT_DIR / "heatmap.png")
