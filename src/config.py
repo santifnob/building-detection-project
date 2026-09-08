@@ -31,3 +31,4 @@ MAX_AREA = 4500
 MORPH_KERNEL_SIZE = 7
 DISTANCE_RATIO = 0.1
 DISTANCE_KERNEL_SIZE = 1
+TOLERANCE_GREEN_PERCENTAGE = 55.0  ## Luego de varias pruebas, se determinó que si más del 55% de los píxeles de un edificio detectado son verdes, es probable que sea un falso positivo (un árbol o vegetación) y no un edificio real.
