@@ -1,0 +1,14 @@
+import sys
+
+import rasterio
+
+if len(sys.argv) < 2:
+    print("Uso: python read_px_m <ruta_a_la_imagen.tif>")
+    sys.exit(1)
+
+image_path = sys.argv[1]
+
+with rasterio.open(image_path) as src:
+    print(f"CRS: {src.crs}")
+    print(f"pixel_size_x (a): {src.transform.a}")
+    print(f"pixel_size_y (e): {src.transform.e}")

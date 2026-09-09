@@ -189,7 +189,7 @@ def count_and_draw_buildings(
         min_area_m2=min_area_m2,
         max_area_m2=max_area_m2,
     )
-    print(f"Filtro de área: método='{metodo}', min={min_area_px}px², max={max_area_px}px²")
+    print(f"Filtro de área: método='{metodo}', min={min_area_px}px², max={max_area_px}px², pixel_size={pixel_size_m}pixel/m")
 
     # --- Segunda pasada: aplicar el filtro de área ya resuelto, el filtro de
     # verde, y dibujar los resultados finales.
