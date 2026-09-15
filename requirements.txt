@@ -5,3 +5,4 @@ rasterio
 Pillow
 opencv-python
 numpy
+onnxruntime

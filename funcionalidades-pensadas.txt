@@ -6,3 +6,5 @@ Por hacer:
 
 - Testear modelo con diferentes GeoTIFF de diferentes calidades y tamaño, mientras se varia parametros
 
+- Filtro turquesa para las piletas
+

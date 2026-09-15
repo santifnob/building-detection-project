@@ -14,7 +14,7 @@ from src.config import (
     OUTPUT_DIR,
 )
 from src.inference.engine import load_model, predict_large_image, predict_tile
-from src.inference.postprocessing import count_and_draw_buildings
+from src.inference.postprocessing import count_and_draw_buildings, estimate_pixel_size_m
 from src.io.image_io import ensure_rgb, read_image_file, save_image
 import src.config as config
 import rasterio
@@ -32,7 +32,13 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
     print(f"Imagen cargada: {w}x{h} píxeles")
 
     with rasterio.open(path) as src:
-            pixel_size_m_retrieved = abs(src.transform.a)  # CRS
+            pixel_size_x_m = abs(float(src.transform.a))
+            pixel_size_y_m = abs(float(src.transform.e))
+            pixel_size_m_retrieved = estimate_pixel_size_m(src.transform)
+            print(
+                f"Resolución geográfica: pixel_size_x={pixel_size_x_m} m, "
+                f"pixel_size_y={pixel_size_y_m} m, GSD={pixel_size_m_retrieved} m/pixel"
+            )
 
     if max(h, w) > LARGE_IMAGE_THRESHOLD:
         print(f"Imagen grande detectada, procesando por tiles de {tile_size}x{tile_size} "
@@ -41,7 +47,19 @@ def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TI
     else:
         probs = predict_tile(model, image_f32)
 
+    # ## printear probs
+    # print(f"Probabilidades predichas: min={probs.min()}, max={probs.max()}, mean={probs.mean()}")
+    # ## printear matriz
+    # probs_test = cv2.resize(probs, (1920, 1080), interpolation=cv2.INTER_NEAREST) 
+    # cv2.imshow("Probabilidades", probs_test)
+
+
     binary_mask = (probs > MASK_THRESHOLD).astype(np.uint8) * 255
+
+    # binary_mask_test = cv2.resize(binary_mask, (1920, 1080), interpolation=cv2.INTER_NEAREST)
+    # cv2.imshow("Máscara binaria", binary_mask_test)
+    # cv2.waitKey(0)
+
     input_uint8 = np.clip(image_f32, 0, 255).astype(np.uint8)
     heatmap_bgr = cv2.applyColorMap((probs * 255).astype(np.uint8), cv2.COLORMAP_VIRIDIS)
     heatmap_rgb = cv2.cvtColor(heatmap_bgr, cv2.COLOR_BGR2RGB)

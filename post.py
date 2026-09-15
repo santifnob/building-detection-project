@@ -1,7 +1,7 @@
 """Ejecuta solo el postprocesado sobre una imagen y una máscara existentes.
 
 Uso:
-    python only_post_processing.py imagen.tif mascara.png
+    python post.py imagen.tif [mascara.png]
 """
 
 from __future__ import annotations
@@ -36,12 +36,32 @@ def load_mask(path: str) -> np.ndarray:
     return (mask > 0).astype(np.uint8) * 255
 
 
+def resolve_mask_path(image_path: str, mask_path: str | None) -> Path:
+    """Devuelve la máscara indicada o la máscara generada para la imagen."""
+    if mask_path is not None:
+        return Path(mask_path)
+
+    image = Path(image_path)
+    automatic_path = OUTPUT_DIR / image.stem / "pre" / "mask.png"
+    if not automatic_path.exists():
+        raise FileNotFoundError(
+            f"No se encontró la máscara automática en {automatic_path}. "
+            "Pásala como segundo argumento: python post.py imagen.tif mascara.png"
+        )
+    return automatic_path
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Ejecuta únicamente el postprocesado sobre una máscara existente."
     )
     parser.add_argument("image", help="Imagen original RGB, por ejemplo un GeoTIFF")
-    parser.add_argument("mask", help="Máscara binaria ya generada")
+    parser.add_argument(
+        "mask",
+        nargs="?",
+        default=None,
+        help="Máscara binaria ya generada (por defecto: outputs/<nombre>/pre/mask.png)",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -55,7 +75,8 @@ def main() -> None:
     args = parse_args()
     output_dir = args.output_dir or OUTPUT_DIR / Path(args.image).stem / "post"
     image = ensure_rgb(read_image_file(args.image))
-    mask = load_mask(args.mask)
+    mask_path = resolve_mask_path(args.image, args.mask)
+    mask = load_mask(str(mask_path))
 
     if image.shape[:2] != mask.shape:
         raise ValueError(

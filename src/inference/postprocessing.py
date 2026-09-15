@@ -6,8 +6,22 @@ falsos positivos verdes tipo césped).
 
 from __future__ import annotations
 
+import math
+
 import cv2
 import numpy as np
+
+
+def estimate_pixel_size_m(transform) -> float:
+    """Return the effective GSD in meters/pixel for a georeferenced raster.
+
+    GeoTIFF transforms can have different scale in X and Y. The common
+    simplification is to use the side length of the pixel, i.e. the square root
+    of the pixel area: sqrt(abs(a) * abs(e)).
+    """
+    pixel_size_x_m = abs(float(transform.a))
+    pixel_size_y_m = abs(float(transform.e))
+    return float(np.sqrt(pixel_size_x_m * pixel_size_y_m))
 
 
 def green_tolerance_check(
@@ -87,8 +101,8 @@ def resolve_area_bounds(
         if not pixel_size_m or pixel_size_m <= 0:
             raise ValueError("area_mode='physical' requiere pixel_size_m > 0 (metros/píxel)")
         px_area_m2 = pixel_size_m ** 2
-        min_px = max(int(min_area_m2 / px_area_m2), 1)
-        max_px = int(max_area_m2 / px_area_m2)
+        min_px = max(math.ceil(min_area_m2 / px_area_m2), 1)
+        max_px = max(math.ceil(max_area_m2 / px_area_m2), min_px)
         return min_px, max_px, "physical"
 
     # Fallback estadístico (area_mode="statistical", o "auto" sin GSD ni manual)
@@ -189,7 +203,11 @@ def count_and_draw_buildings(
         min_area_m2=min_area_m2,
         max_area_m2=max_area_m2,
     )
-    print(f"Filtro de área: método='{metodo}', min={min_area_px}px², max={max_area_px}px², pixel_size={pixel_size_m}pixel/m")
+    print(
+        f"Filtro de área: método='{metodo}', min={min_area_px}px², "
+        f"max={max_area_px}px², pixel_size_m={pixel_size_m} m/pixel "
+        f"(GSD efectivo)"
+    )
 
     # --- Segunda pasada: aplicar el filtro de área ya resuelto, el filtro de
     # verde, y dibujar los resultados finales.
@@ -208,6 +226,18 @@ def count_and_draw_buildings(
         roi[~roi_mask] = 0
 
         if green_tolerance_check(roi, roi_mask, green_tolerance_percentage):
+            continue
+
+        
+
+        # Filtro adicional para piscinas o superficies de agua muy lisas: si
+        # el ROI es un rectángulo casi plano y muy azul, suele ser agua y no
+        # un edificio. El criterio es conservador para evitar falsos positivos.
+        roi_bgr = cv2.cvtColor(roi, cv2.COLOR_RGB2BGR)
+        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_RGB2HSV)
+        blue_mask = cv2.inRange(roi_hsv, np.array([90, 30, 20]), np.array([130, 255, 255]))
+        blue_ratio = cv2.countNonZero(blue_mask) / max(1, roi_mask.sum())
+        if blue_ratio > 0.55 and area < max(20, min_area_px * 2):
             continue
 
         count += 1
