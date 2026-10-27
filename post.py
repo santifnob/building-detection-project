@@ -20,7 +20,7 @@ from src.config import (
     MAX_AREA_M2,
     MIN_AREA_M2,
     MORPH_KERNEL_SIZE,
-    OUTPUT_DIR,
+    TORCH_OUTPUT_DIR,
     PIXEL_SIZE_M_FALLBACK,
     TOLERANCE_GREEN_PERCENTAGE,
 )
@@ -42,7 +42,7 @@ def resolve_mask_path(image_path: str, mask_path: str | None) -> Path:
         return Path(mask_path)
 
     image = Path(image_path)
-    automatic_path = OUTPUT_DIR / image.stem / "pre" / "mask.png"
+    automatic_path = TORCH_OUTPUT_DIR / image.stem / "pre" / "mask.png"
     if not automatic_path.exists():
         raise FileNotFoundError(
             f"No se encontró la máscara automática en {automatic_path}. "
@@ -60,22 +60,19 @@ def parse_args() -> argparse.Namespace:
         "mask",
         nargs="?",
         default=None,
-        help="Máscara binaria ya generada (por defecto: outputs/<nombre>/pre/mask.png)",
+        help="Máscara binaria ya generada (por defecto: outputs/torch/<nombre>/pre/mask.png)",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=None,
-        help="Carpeta de salida (por defecto: outputs/<nombre-tif>/post)",
+        help="Carpeta de salida (por defecto: outputs/torch/<nombre-tif>/post)",
     )
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
-    output_dir = args.output_dir or OUTPUT_DIR / Path(args.image).stem / "post"
-    image = ensure_rgb(read_image_file(args.image))
-    mask_path = resolve_mask_path(args.image, args.mask)
+def process_mask(image_path: str, mask_path: str | Path, output_dir: Path) -> int:
+    image = ensure_rgb(read_image_file(image_path))
     mask = load_mask(str(mask_path))
 
     if image.shape[:2] != mask.shape:
@@ -105,6 +102,14 @@ def main() -> None:
 
     print(f"Listo. Se detectaron {building_count} edificios.")
     print(f"Resultados guardados en: {output_dir}")
+    return building_count
+
+
+def main() -> None:
+    args = parse_args()
+    output_dir = args.output_dir or TORCH_OUTPUT_DIR / Path(args.image).stem / "post"
+    mask_path = resolve_mask_path(args.image, args.mask)
+    process_mask(args.image, mask_path, output_dir)
 
 
 if __name__ == "__main__":

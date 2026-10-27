@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from src.config import OUTPUT_DIR
+from src.config import ONNX_OUTPUT_DIR
 from src.inference.onnx_detector import run_onnx_detection
 from src.io.image_io import save_image
 from src.pipeline import run as run_pytorch_detection
+from post import process_mask
 
 
 def main() -> None:
@@ -25,10 +26,15 @@ def main() -> None:
 
     if args.model == "onnx":
         mask, count = run_onnx_detection(args.image)
-        output_path = OUTPUT_DIR / Path(args.image).stem / "post" / "onnx_mask.png"
+        output_dir = ONNX_OUTPUT_DIR / Path(args.image).stem / "post"
+        output_path = output_dir / "onnx_mask.png"
         save_image(mask, output_path)
-        print(f"Listo. Se detectaron {count} edificios.")
         print(f"Máscara ONNX guardada en: {output_path}")
+        processed_count = process_mask(args.image, output_path, output_dir)
+        print(
+            f"Detecciones ONNX antes del postprocesamiento: {count}; "
+            f"después: {processed_count}."
+        )
     else:
         run_pytorch_detection(args.image, tile_size=args.tile_size, overlap=args.overlap)
 

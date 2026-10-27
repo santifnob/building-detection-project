@@ -28,10 +28,11 @@ def load_model() -> UNet:
 
     model = UNet(in_channels=3, num_classes=2, base_features=64, depth=4, dropout=0.0)
 
-    try:
+    if str(weights_path).lower().endswith(".safetensors"):
         from safetensors.torch import load_file
+
         state_dict = load_file(str(weights_path), device="cpu")
-    except ImportError:
+    else:
         state_dict = torch.load(weights_path, map_location="cpu", weights_only=False)
 
     if "model_state_dict" in state_dict:

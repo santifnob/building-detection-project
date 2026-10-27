@@ -1,7 +1,5 @@
-from os import path
 from pathlib import Path
 
-from anyio import sleep
 import cv2
 import numpy as np
 
@@ -11,7 +9,7 @@ from src.config import (
     DEFAULT_TILE_SIZE,
     LARGE_IMAGE_THRESHOLD,
     MASK_THRESHOLD,
-    OUTPUT_DIR,
+    TORCH_OUTPUT_DIR,
 )
 from src.inference.engine import load_model, predict_large_image, predict_tile
 from src.inference.postprocessing import count_and_draw_buildings, estimate_pixel_size_m
@@ -20,7 +18,7 @@ import src.config as config
 import rasterio
 
 def run(path: str, tile_size: int = DEFAULT_TILE_SIZE, overlap: int = DEFAULT_TILE_OVERLAP):
-    result_dir = OUTPUT_DIR / Path(path).stem
+    result_dir = TORCH_OUTPUT_DIR / Path(path).stem
     pre_dir = result_dir / "pre"
     post_dir = result_dir / "post"
     pre_dir.mkdir(parents=True, exist_ok=True)

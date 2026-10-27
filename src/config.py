@@ -8,6 +8,8 @@ MODEL_REPO = "harshinde/spacenet-models"
 MODEL_FILENAME = "model.safetensors"
 LOCAL_MODEL_PATH = Path(__file__).resolve().parent.parent / "best_model.pt"
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "outputs"
+TORCH_OUTPUT_DIR = OUTPUT_DIR / "torch"
+ONNX_OUTPUT_DIR = OUTPUT_DIR / "onnx"
 ONNX_MODEL_PATH = "src/models/red_casas.onnx"
 
 ## Parámetros de Preprocesamiento
@@ -51,4 +53,3 @@ TARGET_PIXEL_SIZE_M = 0.246
 RED_AREA_MIN_M2 = 25.0
 RED_AREA_MAX_M2 = 2000.0
 RED_DIVIDIR_M2 = 300.0
-

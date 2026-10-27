@@ -1,5 +1,11 @@
 # building-detection-project
 
+## Ejecución
+
+Consulta [`RUNNING.md`](./RUNNING.md) para ver cómo ejecutar la aplicación con
+los modelos PyTorch y ONNX, procesar imágenes grandes y ejecutar únicamente el
+postprocesamiento.
+
 
 ## Explicación paso a paso del postprocesamiento de la máscara binaria
 
